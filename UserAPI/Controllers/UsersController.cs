@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using UserAPI.Data;
 using UserAPI.Models;
 
 namespace UserAPI.Controllers
@@ -21,15 +22,28 @@ namespace UserAPI.Controllers
         }
 
         // GET: api/Users
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers()
+        [HttpGet(Name = "AllUsers")]
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers(string name = "", string role = "", int page = 1, int pageSize = 50)
         {
-            return await _context.Users.ToListAsync();
+            var query = _context.Users.AsQueryable();
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                query = query.Where(u => u.Name == name);
+            }
+            if (!string.IsNullOrEmpty(role))
+            {
+                query = query.Where(u => u.Role.ToLower() == role.ToLower());
+            }
+
+            var result = await query.Skip((page-1) * pageSize).Take(pageSize).ToListAsync(); // query ul nu se trimite catre baza de date pana nu se apeleaza .ToListAsync() deci nu se primeste niciun rezultat
+
+            return Ok(result);
         }
 
         // GET: api/Users/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<UserDTO>> GetUser(long id)
+        [HttpGet("{id}", Name = "GetUserById")]
+        public async Task<ActionResult<User>> GetUser(long id)
         {
             var user = await _context.Users.FindAsync(id);
 
@@ -43,8 +57,8 @@ namespace UserAPI.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(long id, UserDTO user)
+        [HttpPut("{id}", Name = "UpdateUser")]
+        public async Task<IActionResult> PutUser(long id, User user)
         {
             if (id != user.Id)
             {
@@ -74,8 +88,8 @@ namespace UserAPI.Controllers
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<UserDTO>> PostUser(UserDTO user)
+        [HttpPost(Name = "CreateUser")]
+        public async Task<ActionResult<UserDTO>> PostUser(User user)
         {
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -84,7 +98,7 @@ namespace UserAPI.Controllers
         }
 
         // DELETE: api/Users/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}", Name = "DeleteUser")]
         public async Task<IActionResult> DeleteUser(long id)
         {
             var user = await _context.Users.FindAsync(id);
