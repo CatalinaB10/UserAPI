@@ -13,11 +13,11 @@ namespace UserAPI.Data
 
         public DbSet<User> Users { get; set; } = null!;
 
-        public DbSet<Device> Devices { get; set; } = null!;
+        //public DbSet<Device> Devices { get; set; } = null!;
 
-        override protected void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.Entity<User>().HasMany(u => u.Devices).WithOne().HasForeignKey(d => d.UserId);
-        }
+        //override protected void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //   modelBuilder.Entity<User>().HasMany(u => u.Devices).WithOne().HasForeignKey(d => d.UserId).IsRequired(false);
+        //}
     }
 }

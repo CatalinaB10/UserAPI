@@ -13,7 +13,7 @@ namespace UserAPI.Data
                 .AddJsonFile("appsettings.json")
                 .Build();
 
-            var conn = configuration.GetConnectionString("DemoContext");
+            var conn = configuration.GetConnectionString("UserDbConnString");
 
             optionsBuilder.UseNpgsql(conn);
             return new UserContext(optionsBuilder.Options);

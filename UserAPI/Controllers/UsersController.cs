@@ -60,7 +60,7 @@ namespace UserAPI.Controllers
         [HttpPut("{id}", Name = "UpdateUser")]
         public async Task<IActionResult> PutUser(long id, User user)
         {
-            if (id != user.Id)
+            if (! user.Id.Equals(id))
             {
                 return BadRequest();
             }
@@ -115,7 +115,7 @@ namespace UserAPI.Controllers
 
         private bool UserExists(long id)
         {
-            return _context.Users.Any(e => e.Id == id);
+            return _context.Users.Any(e => e.Id.Equals(id));
         }
     }
 }
