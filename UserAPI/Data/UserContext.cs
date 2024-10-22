@@ -13,6 +13,12 @@ namespace UserAPI.Data
 
         public DbSet<User> Users { get; set; } = null!;
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>()
+                .HasKey(u => u.Id); // Set GUID as primary key
+        }
+
         //public DbSet<Device> Devices { get; set; } = null!;
 
         //override protected void OnModelCreating(ModelBuilder modelBuilder)

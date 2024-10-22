@@ -8,9 +8,8 @@ namespace UserAPI.Models
     public class User
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // BIGSERIAL maps to identity in C#
         [Column("Id")]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = new Guid();  
 
         [Required] // NOT NULL in the database
         [MaxLength(100)] // VARCHAR(100)
