@@ -12,11 +12,13 @@ namespace UserAPI.Data
         }
 
         public DbSet<User> Users { get; set; } = null!;
+        public DbSet<Device> Devices { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
                 .HasKey(u => u.Id); // Set GUID as primary key
+            modelBuilder.Entity<User>().HasMany(u => u.Devices).WithOne().HasForeignKey(d => d.UserId).IsRequired(false).OnDelete(DeleteBehavior.Cascade);
         }
 
         //public DbSet<Device> Devices { get; set; } = null!;

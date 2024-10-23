@@ -22,6 +22,6 @@ namespace UserAPI.Models
         public string Role { get; set; }
 
         [Column("Devices")]
-        public ICollection<Device>? Devices { get; set; } = new List<Device>();
+        public IEnumerable<Device>? Devices { get; set; } = new List<Device>();
     }
 }

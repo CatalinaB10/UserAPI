@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserAPI.Data;
 using UserAPI.Models;
+using DeviceAPI.Models;
+using DeviceFrontend.Components.Pages;
 
 namespace UserAPI.Controllers
 {
@@ -55,6 +57,30 @@ namespace UserAPI.Controllers
             return user;
         }
 
+        // GET: api/Users/Devices
+        [HttpGet("/Devices/({id})")]
+        public async Task<IEnumerable<Device>> GetUserDevices(Guid id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+            {
+                return null;
+            }
+            
+            var usersDevices = await _context.Devices.Where(d => d.UserId == user.Id).ToListAsync();
+            return usersDevices;
+        }
+
+        // GET: users/devices/assigned
+        [HttpGet("/devices/assigned")]
+        public async Task<IEnumerable<Device>> GetAssignedDevices()
+        {
+            var ids = await _context.Users.Select(u => u.Id).ToListAsync();
+            
+            return await _context.Devices.Where(d => ids.Contains(d.UserId.Value) && d.UserId!=null).ToListAsync();
+        }
+
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}", Name = "UpdateUser")]
@@ -86,6 +112,25 @@ namespace UserAPI.Controllers
             return NoContent();
         }
 
+        // PUT: api/Users/AddDevice/userId
+        // method to assign a device to a specific user
+        [HttpPut("/AddDevice/({userId})")]
+        public async Task<IActionResult> AddDeviceToUser(Guid userId, Device device)
+        {
+            var user = await _context.Users.FindAsync(userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            device.UserId = user.Id;
+            _context.Devices.Add(device);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost(Name = "CreateUser")]
@@ -107,15 +152,44 @@ namespace UserAPI.Controllers
                 return NotFound();
             }
 
+            foreach(var device in user.Devices)
+            {
+                _context.Devices.Remove(device);
+            }
+
             _context.Users.Remove(user);
+            
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // DELETE: api/users/devices/deleteall
+        [HttpDelete("/devices/deleteall")]
+        public async Task<IActionResult> DeleteDevicesAll()
+        {
+            var devices = await _context.Devices.ToListAsync();
+            foreach (var device in devices)
+            {
+                _context.Devices.Remove(device);
+
+            }
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        // GET: api/users/devices/getall
+        [HttpGet("/devices/getall")]
+        public async Task<IEnumerable<Device>> GetDevicesAll()
+        {
+            return await _context.Devices.ToListAsync();
         }
 
         private bool UserExists(Guid id)
         {
             return _context.Users.Any(e => e.Id.Equals(id));
         }
+
+       
     }
 }
