@@ -22,6 +22,7 @@ builder.Services.AddEntityFrameworkNpgsql().AddDbContext<UserContext>(opt => opt
 var connDevice = builder.Configuration.GetConnectionString("DeviceDbConnString");
 builder.Services.AddEntityFrameworkNpgsql().AddDbContext<DeviceContext>(opt => opt.UseNpgsql(connDevice));
 
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

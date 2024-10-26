@@ -9,6 +9,7 @@ using UserAPI.Data;
 using UserAPI.Models;
 using DeviceAPI.Models;
 using DeviceFrontend.Components.Pages;
+using DeviceAPI.Context;
 
 namespace UserAPI.Controllers
 {
@@ -17,10 +18,14 @@ namespace UserAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserContext _context;
+        private readonly DeviceContext _deviceContext;
+        private readonly HttpClient _httpClient;
 
-        public UsersController(UserContext context)
+        public UsersController(UserContext context, HttpClient httpClient, DeviceContext deviceContext)
         {
             _context = context;
+            _httpClient = httpClient;
+            _deviceContext = deviceContext;
         }
 
         // GET: api/Users
@@ -125,8 +130,14 @@ namespace UserAPI.Controllers
             }
 
             device.UserId = user.Id;
-            _context.Devices.Add(device);
-            await _context.SaveChangesAsync();
+            _context.Devices.Add(device); //update devices from UMS db
+           //  await _httpClient.PutAsJsonAsync<Device>($"api/devices/{device.Id}", device); // update devices from DMS db
+            _context.SaveChanges();
+            _deviceContext.Update<Device>(_deviceContext.Device.Find(device.Id));
+           
+            _deviceContext.SaveChanges();
+             
+            
 
             return NoContent();
         }
