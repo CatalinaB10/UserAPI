@@ -7,10 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using UserAPI.Data;
 using UserAPI.Models;
-using DeviceAPI.Models;
-using DeviceFrontend.Components.Pages;
-using DeviceAPI.Context;
-
 namespace UserAPI.Controllers
 {
     [Route("api/[controller]")]
@@ -18,19 +14,18 @@ namespace UserAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly UserContext _context;
-        private readonly DeviceContext _deviceContext;
         private readonly HttpClient _httpClient;
 
-        public UsersController(UserContext context, HttpClient httpClient, DeviceContext deviceContext)
+        public UsersController(UserContext context, HttpClient httpClient)
         {
             _context = context;
             _httpClient = httpClient;
-            _deviceContext = deviceContext;
+           
         }
 
         // GET: api/Users
         [HttpGet(Name = "AllUsers")]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers(string name = "", string role = "", int page = 1, int pageSize = 50)
+        public async Task<ActionResult<IEnumerable<UserDTO>>> GetUsers(string name = "", string role = "", int page = 1, int pageSize = 50)
         {
             var query = _context.Users.AsQueryable();
 
@@ -50,7 +45,7 @@ namespace UserAPI.Controllers
 
         // GET: api/Users/5
         [HttpGet("{id}", Name = "GetUserById")]
-        public async Task<ActionResult<User>> GetUser(Guid id)
+        public async Task<ActionResult<UserDTO>> GetUser(Guid id)
         {
             var user = await _context.Users.FindAsync(id);
 
@@ -63,33 +58,35 @@ namespace UserAPI.Controllers
         }
 
         // GET: api/Users/Devices
-        [HttpGet("/Devices/({id})")]
-        public async Task<IEnumerable<Device>> GetUserDevices(Guid id)
-        {
-            var user = await _context.Users.FindAsync(id);
+        //[HttpGet("/Devices/({id})")]
+        //public async Task<IEnumerable<DeviceDTO>> GetUserDevices(Guid id)
+        //{
+        //    var user = await _context.Users.FindAsync(id);
 
-            if (user == null)
-            {
-                return null;
-            }
+        //    if (user == null)
+        //    {
+        //        return null;
+        //    }
             
-            var usersDevices = await _context.Devices.Where(d => d.UserId == user.Id).ToListAsync();
-            return usersDevices;
-        }
+        //    var usersDevices = await _context.Devices.Where(d => d.UserId == user.Id).ToListAsync();
+        //    return usersDevices;
+        //}
 
         // GET: users/devices/assigned
-        [HttpGet("/devices/assigned")]
-        public async Task<IEnumerable<Device>> GetAssignedDevices()
-        {
-            var ids = await _context.Users.Select(u => u.Id).ToListAsync();
-            
-            return await _context.Devices.Where(d => ids.Contains(d.UserId.Value) && d.UserId!=null).ToListAsync();
-        }
+        //[HttpGet("/devices/assigned")]
+        //public async Task<IEnumerable<DeviceDTO>> GetAssignedDevices()
+        //{
+        //    var ids = await _context.Users.Select(u => u.Id).ToListAsync();
+
+        //    return await _context.Devices.Where(d => ids.Contains(d.UserId.Value) && d.UserId!=null).ToListAsync();
+        //    //return await _context.Devices.Where(d => d.UserId.HasValue && ids.Contains(d.UserId.Value)).ToListAsync();
+
+        //}
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}", Name = "UpdateUser")]
-        public async Task<IActionResult> PutUser(Guid id, User user)
+        public async Task<IActionResult> PutUser(Guid id, UserDTO user)
         {
             if (! user.Id.Equals(id))
             {
@@ -119,33 +116,33 @@ namespace UserAPI.Controllers
 
         // PUT: api/Users/AddDevice/userId
         // method to assign a device to a specific user
-        [HttpPut("/AddDevice/({userId})")]
-        public async Task<IActionResult> AddDeviceToUser(Guid userId, Device device)
-        {
-            var user = await _context.Users.FindAsync(userId);
+        //[HttpPut("/AddDevice/({userId})")]
+        //public async Task<IActionResult> AddDeviceToUser(Guid userId, DeviceDTO device)
+        //{
+        //    var user = await _context.Users.FindAsync(userId);
 
-            if (user == null)
-            {
-                return NotFound();
-            }
+        //    if (user == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            device.UserId = user.Id;
-            _context.Devices.Add(device); //update devices from UMS db
-           //  await _httpClient.PutAsJsonAsync<Device>($"api/devices/{device.Id}", device); // update devices from DMS db
-            _context.SaveChanges();
-            _deviceContext.Update<Device>(_deviceContext.Device.Find(device.Id));
+        //    device.UserId = user.Id;
+        //    _context.Devices.Add(device); //update devices from UMS db
+        //   //  await _httpClient.PutAsJsonAsync<Device>($"api/devices/{device.Id}", device); // update devices from DMS db
+        //    _context.SaveChanges();
+        //    //_deviceContext.Update<DeviceDTO>(_deviceContext.Device.Find(device.Id));
            
-            _deviceContext.SaveChanges();
+        //    //_deviceContext.SaveChanges();
              
             
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost(Name = "CreateUser")]
-        public async Task<ActionResult<UserDTO>> PostUser(User user)
+        public async Task<ActionResult<UserDTO>> PostUser(UserDTO user)
         {
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -163,10 +160,10 @@ namespace UserAPI.Controllers
                 return NotFound();
             }
 
-            foreach(var device in user.Devices)
-            {
-                _context.Devices.Remove(device);
-            }
+            //foreach(var device in user.Devices)
+            //{
+            //    _context.Devices.Remove(device);
+            //}
 
             _context.Users.Remove(user);
             
@@ -176,31 +173,30 @@ namespace UserAPI.Controllers
         }
 
         // DELETE: api/users/devices/deleteall
-        [HttpDelete("/devices/deleteall")]
-        public async Task<IActionResult> DeleteDevicesAll()
-        {
-            var devices = await _context.Devices.ToListAsync();
-            foreach (var device in devices)
-            {
-                _context.Devices.Remove(device);
+        //[HttpDelete("/devices/deleteall")]
+        //public async Task<IActionResult> DeleteDevicesAll()
+        //{
+        //    var devices = await _context.Devices.ToListAsync();
+        //    foreach (var device in devices)
+        //    {
+        //        _context.Devices.Remove(device);
 
-            }
-            await _context.SaveChangesAsync();
-            return NoContent();
-        }
+        //    }
+        //    await _context.SaveChangesAsync();
+        //    return NoContent();
+        //}
 
         // GET: api/users/devices/getall
-        [HttpGet("/devices/getall")]
-        public async Task<IEnumerable<Device>> GetDevicesAll()
-        {
-            return await _context.Devices.ToListAsync();
-        }
+        //[HttpGet("/devices/getall")]
+        //public async Task<IEnumerable<DeviceDTO>> GetDevicesAll()
+        //{
+        //    return await _context.Devices.ToListAsync();
+        //}
 
         private bool UserExists(Guid id)
         {
             return _context.Users.Any(e => e.Id.Equals(id));
         }
 
-       
     }
 }

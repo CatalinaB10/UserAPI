@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using DeviceAPI.Models;
+
 
 namespace UserAPI.Models
 {
@@ -21,7 +21,7 @@ namespace UserAPI.Models
         [Column("Role")]
         public string Role { get; set; }
 
-        [Column("Devices")]
-        public IEnumerable<Device>? Devices { get; set; } = new List<Device>();
+        //[Column("Devices")]
+        //public IEnumerable<DeviceDTO>? Devices { get; set; } = new List<DeviceDTO>();
     }
 }
