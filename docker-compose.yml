@@ -1,0 +1,42 @@
+services:
+  userapi:
+    image: user-img
+    build:
+      context: UserAPI
+      dockerfile: Dockerfile
+    networks:
+      - ds-network 
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - users-ds-db
+
+  users-ds-db:
+    image: postgres:latest 
+    container_name: users-ds-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: rox123
+      POSTGRES_DB: UMS
+    ports:
+      - "5433:5432"  
+    restart: always
+    volumes:
+      - psql_data:/var/lib/postgreql/data/  
+    networks:
+      - ds-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    
+
+volumes:
+  psql_data:  
+
+networks:
+  ds-network: 
+    driver: bridge

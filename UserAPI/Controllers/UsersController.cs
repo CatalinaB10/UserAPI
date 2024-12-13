@@ -9,7 +9,7 @@ using UserAPI.Data;
 using UserAPI.Models;
 namespace UserAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("/userapi/api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -19,8 +19,7 @@ namespace UserAPI.Controllers
         public UsersController(UserContext context, HttpClient httpClient)
         {
             _context = context;
-            _httpClient = httpClient;
-           
+            _httpClient = httpClient;  
         }
 
         // GET: api/Users

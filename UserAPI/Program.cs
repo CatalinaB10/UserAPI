@@ -21,6 +21,16 @@ builder.Services.AddEntityFrameworkNpgsql().AddDbContext<UserContext>(opt => opt
 //var connDevice = builder.Configuration.GetConnectionString("DeviceDbConnString");
 //builder.Services.AddEntityFrameworkNpgsql().AddDbContext<DeviceContext>(opt => opt.UseNpgsql(connDevice));
 
+builder.Services.AddCors(
+    op => {
+        op.AddPolicy("AllowAll", p =>
+        {
+            p.WithOrigins("http://localhost/frontend");
+            p.AllowAnyHeader();
+            p.AllowAnyMethod();
+            p.AllowAnyOrigin();
+        });
+    });
 
 var app = builder.Build();
 
@@ -30,19 +40,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
 
-app.UseCors(op =>
-{
-    op.AllowAnyHeader();
-    op.AllowAnyMethod();
-    op.AllowAnyOrigin();
 
-});
 
 app.Run();
